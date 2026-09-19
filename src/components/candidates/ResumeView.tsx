@@ -5,7 +5,7 @@ import type { Resume } from "@/types/filtr";
 
 interface ResumeViewProps {
   candidateName: string;
-  resume?: Resume;
+  resume?: Resume | undefined;
 }
 
 export function ResumeView({ candidateName, resume }: ResumeViewProps) {

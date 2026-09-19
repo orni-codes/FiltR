@@ -18,8 +18,8 @@ import type { Candidate, Interview, CandidateReport, Job } from "@/types/filtr";
 interface CandidateOverviewProps {
   candidate: Candidate;
   job?: Job;
-  interview?: Interview;
-  report?: CandidateReport;
+  interview?: Interview | undefined;
+  report?: CandidateReport | undefined;
   onGoToTab: (tab: "overview" | "resume" | "interview" | "evidence" | "report") => void;
 }
 

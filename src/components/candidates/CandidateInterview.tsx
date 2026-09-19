@@ -6,8 +6,8 @@ import type { Interview } from "@/types/filtr";
 interface CandidateInterviewProps {
   candidateName: string;
   candidateInitials: string;
-  interview?: Interview;
-  focusTime?: string;
+  interview?: Interview | undefined;
+  focusTime?: string | undefined;
   onTimestampClick: (time: string) => void;
 }
 

@@ -55,7 +55,6 @@ function CandidateWorkspacePage() {
 
   const setTab = (newTab: CandidateSearch["tab"], newTime?: string) => {
     navigate({
-      // @ts-expect-error — regenerated after build
       to: "/jobs/$jobId/candidates/$candidateId",
       params: { jobId: job.id, candidateId: candidate.id },
       search: { tab: newTab, ...(newTime ? { time: newTime } : {}) },

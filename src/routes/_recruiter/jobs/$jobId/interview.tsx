@@ -18,7 +18,9 @@ function JobInterviewPage() {
   const { job } = parentRoute.useLoaderData();
   const candidates = getCandidatesForJob(job.id);
   const [selectedCandidateId, setSelectedCandidateId] = useState(candidates[0]?.id ?? "");
-  const [questionCount, setQuestionCount] = useState(Math.min(6, Math.max(4, job.requirements.length)));
+  const [questionCount, setQuestionCount] = useState(
+    Math.min(6, Math.max(4, job.requirements.length)),
+  );
   const [duration, setDuration] = useState(15);
   const [followUps, setFollowUps] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -74,7 +76,8 @@ function JobInterviewPage() {
             </div>
             <h1 className="mt-1 text-lg font-semibold">Generate an adaptive interview</h1>
             <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
-              FiltR will structure questions around the role requirements and use follow-ups when an answer needs clarification.
+              FiltR will structure questions around the role requirements and use follow-ups when an
+              answer needs clarification.
             </p>
           </div>
 
@@ -91,7 +94,9 @@ function JobInterviewPage() {
                   className="mt-1.5 h-9 w-full rounded-md border border-border bg-background px-2 text-xs font-normal normal-case tracking-normal"
                 >
                   {candidates.map((item) => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -102,9 +107,13 @@ function JobInterviewPage() {
                   onChange={(event) => setQuestionCount(Number(event.target.value))}
                   className="mt-1.5 h-9 w-full rounded-md border border-border bg-background px-2 text-xs font-normal normal-case tracking-normal"
                 >
-                  {[4, 5, 6, 7, 8].filter((value) => value <= Math.max(4, job.requirements.length + 2)).map((value) => (
-                    <option key={value} value={value}>{value}</option>
-                  ))}
+                  {[4, 5, 6, 7, 8]
+                    .filter((value) => value <= Math.max(4, job.requirements.length + 2))
+                    .map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
                 </select>
               </label>
               <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -114,7 +123,11 @@ function JobInterviewPage() {
                   onChange={(event) => setDuration(Number(event.target.value))}
                   className="mt-1.5 h-9 w-full rounded-md border border-border bg-background px-2 text-xs font-normal normal-case tracking-normal"
                 >
-                  {[10, 15, 20, 25].map((value) => <option key={value} value={value}>{value}</option>)}
+                  {[10, 15, 20, 25].map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -124,7 +137,11 @@ function JobInterviewPage() {
         {candidate && (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              <input type="checkbox" checked={followUps} onChange={(event) => setFollowUps(event.target.checked)} />
+              <input
+                type="checkbox"
+                checked={followUps}
+                onChange={(event) => setFollowUps(event.target.checked)}
+              />
               Allow adaptive follow-up questions
             </label>
             <Button onClick={handleGenerate} disabled={isGenerating} className="gap-2">
@@ -141,7 +158,8 @@ function JobInterviewPage() {
                 <Link2 className="size-3.5 text-primary" /> Interview link ready
               </div>
               <code className="mt-1 block truncate text-[11px] text-muted-foreground">
-                {window.location.origin}{generatedUrl}
+                {window.location.origin}
+                {generatedUrl}
               </code>
             </div>
             <Button variant="outline" size="sm" onClick={copyLink} className="shrink-0 gap-2">
@@ -161,7 +179,9 @@ function JobInterviewPage() {
       ) : (
         <Panel className="p-10 text-center">
           <h2 className="text-sm font-semibold">Add a candidate before generating an interview</h2>
-          <p className="mt-1 text-xs text-muted-foreground">This job currently has no candidates.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            This job currently has no candidates.
+          </p>
         </Panel>
       )}
     </div>

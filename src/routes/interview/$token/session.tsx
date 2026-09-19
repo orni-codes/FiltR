@@ -33,7 +33,7 @@ function InterviewSessionPage() {
 
   const questions = DEMO_INTERVIEW_QUESTIONS;
   const currentQIndex = session.currentQuestionIndex;
-  const activeQuestion: DemoInterviewQuestion = questions[currentQIndex] || questions[0];
+  const activeQuestion: DemoInterviewQuestion = questions[currentQIndex] ?? questions[0]!;
   const isFollowUp = session.isInFollowUp && !!activeQuestion.followUpQuestion;
   const displayQuestion = isFollowUp ? activeQuestion.followUpQuestion! : activeQuestion;
   const totalQuestions = questions.length;
@@ -62,6 +62,7 @@ function InterviewSessionPage() {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      return undefined;
     }
   }, [session.stepState]);
 
@@ -145,7 +146,7 @@ function InterviewSessionPage() {
             stepState: "COMPLETE",
             completedAt: new Date().toISOString(),
           }));
-          navigate({
+          void navigate({
             to: "/interview/$token/complete",
             params: { token },
           });
@@ -165,8 +166,21 @@ function InterviewSessionPage() {
     <div className="animate-workspace-enter mx-auto max-w-5xl space-y-5">
       {/* Top progress */}
       <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-        <div><div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Live interview</div><div className="mt-1 text-xs font-medium text-white">{displayQuestion.requirementName}</div></div>
-        <div className="min-w-[180px]"><InterviewProgress currentQuestionNumber={currentQIndex + 1} totalQuestions={totalQuestions} isFollowUp={isFollowUp} /></div>
+        <div>
+          <div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Live interview
+          </div>
+          <div className="mt-1 text-xs font-medium text-white">
+            {displayQuestion.requirementName}
+          </div>
+        </div>
+        <div className="min-w-[180px]">
+          <InterviewProgress
+            currentQuestionNumber={currentQIndex + 1}
+            totalQuestions={totalQuestions}
+            isFollowUp={isFollowUp}
+          />
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-12">

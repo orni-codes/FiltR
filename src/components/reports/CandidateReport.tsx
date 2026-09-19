@@ -104,7 +104,7 @@ export function CandidateReport({
         interview={interview}
         selectedEvidenceId={selectedEvidenceId}
         onSelectEvidence={setSelectedEvidenceId}
-        onJumpToTranscript={onJumpToTimestamp}
+        {...(onJumpToTimestamp ? { onJumpToTranscript: onJumpToTimestamp } : {})}
       />
 
       {/* Requirement Coverage Details */}
@@ -114,7 +114,7 @@ export function CandidateReport({
           setSelectedEvidenceId(id);
           window.scrollTo({ top: 400, behavior: "smooth" });
         }}
-        onJumpToTimestamp={onJumpToTimestamp}
+        {...(onJumpToTimestamp ? { onJumpToTimestamp } : {})}
       />
 
       {/* Audit Trail Section */}

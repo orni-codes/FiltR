@@ -1,10 +1,7 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { InterviewComplete } from "@/components/interview/InterviewComplete";
-import {
-  DEMO_INTERVIEW_QUESTIONS,
-  loadSessionState,
-} from "@/lib/interview-session";
+import { DEMO_INTERVIEW_QUESTIONS, loadSessionState } from "@/lib/interview-session";
 import { filtRStore } from "@/lib/store";
 import type { InterviewEvidence, TranscriptEntry } from "@/types/filtr";
 
@@ -33,10 +30,9 @@ function buildCompletedInterview(token: string) {
       timestamp: `${String(Math.floor((index * 270 + 60) / 60)).padStart(2, "0")}:00`,
       title: question.requirementName,
       aiQuestion: question.question,
-      candidateAnswer:
-        primaryAnswer
-          ? `The candidate provided a recorded response describing their practical experience with ${question.requirementName}.`
-          : "No response recorded.",
+      candidateAnswer: primaryAnswer
+        ? `The candidate provided a recorded response describing their practical experience with ${question.requirementName}.`
+        : "No response recorded.",
       candidateAnswerTime: primaryAnswer ? "Response recorded" : undefined,
       hasFollowUp: Boolean(followUpAnswer),
       aiFollowUp: followUpAnswer ? question.followUpQuestion?.question : undefined,
@@ -55,11 +51,12 @@ function buildCompletedInterview(token: string) {
       ? session.answers.find((answer) => answer.questionId === question.followUpQuestion?.id)
       : undefined;
 
-    const status = question.expectedOutcome === "validated"
-      ? "Validated"
-      : question.expectedOutcome === "partial"
-        ? "Partial"
-        : "Needs validation";
+    const status =
+      question.expectedOutcome === "validated"
+        ? "Validated"
+        : question.expectedOutcome === "partial"
+          ? "Partial"
+          : "Needs validation";
 
     return {
       id: `ev-${question.id}`,
@@ -79,7 +76,11 @@ function buildCompletedInterview(token: string) {
             : `The initial response did not provide enough direct evidence for ${question.requirementName}.`,
       evidencePoints:
         status === "Validated"
-          ? ["Specific practical example", "Clear ownership or methodology", "Evidence aligned with the requirement"]
+          ? [
+              "Specific practical example",
+              "Clear ownership or methodology",
+              "Evidence aligned with the requirement",
+            ]
           : status === "Partial"
             ? ["Relevant experience mentioned", "Technical depth requires clarification"]
             : ["Insufficient direct evidence", "Recruiter validation recommended"],
@@ -98,10 +99,7 @@ function buildCompletedInterview(token: string) {
   return {
     duration: `${String(Math.max(1, Math.round(durationSeconds / 60))).padStart(2, "0")}:00`,
     questionsTotal: DEMO_INTERVIEW_QUESTIONS.length,
-    questionsAnswered: Math.max(
-      DEMO_INTERVIEW_QUESTIONS.length,
-      session.totalAnswered,
-    ),
+    questionsAnswered: Math.max(DEMO_INTERVIEW_QUESTIONS.length, session.totalAnswered),
     transcript,
     evidenceItems,
   };

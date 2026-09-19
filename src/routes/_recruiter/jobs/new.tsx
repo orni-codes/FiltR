@@ -166,7 +166,8 @@ function CreateJobPage() {
             Create New Job Workspace
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Paste your job description to extract evidence criteria and generate an AI interview structure.
+            Paste your job description to extract evidence criteria and generate an AI interview
+            structure.
           </p>
         </div>
 
@@ -288,7 +289,8 @@ function CreateJobPage() {
             </div>
             <h2 className="text-lg font-bold text-foreground">Analyzing Job Description...</h2>
             <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-              FiltR AI is extracting core competencies, technical criteria, and behavioral requirements for {jobTitle}.
+              FiltR AI is extracting core competencies, technical criteria, and behavioral
+              requirements for {jobTitle}.
             </p>
           </Panel>
         )}

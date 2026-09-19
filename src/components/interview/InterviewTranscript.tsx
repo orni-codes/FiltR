@@ -81,7 +81,7 @@ export function InterviewTranscript({
               key={entry.timestamp}
               entry={entry}
               isFocused={focusTime === entry.timestamp}
-              onPlayTimestamp={onPlayTimestamp}
+              {...(onPlayTimestamp ? { onPlayTimestamp } : {})}
               defaultExpanded={expandAll}
             />
           ))

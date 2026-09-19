@@ -37,6 +37,7 @@ export interface Candidate {
   id: string;
   initials: string;
   name: string;
+  email?: string | undefined;
   experience: string;
   jobId: string;
   interviewStatus: CandidateInterviewStatus;
@@ -79,9 +80,9 @@ export interface InterviewEvidence {
   timestamp: string; // e.g. "02:14"
   duration?: string;
   hasFollowUp?: boolean;
-  followUpQuestion?: string;
-  followUpAnswer?: string;
-  followUpTimestamp?: string;
+  followUpQuestion?: string | undefined;
+  followUpAnswer?: string | undefined;
+  followUpTimestamp?: string | undefined;
 }
 
 export interface TranscriptEntry {
@@ -91,12 +92,12 @@ export interface TranscriptEntry {
   title: string;
   aiQuestion: string;
   candidateAnswer: string;
-  candidateAnswerTime?: string; // e.g. "02:14–03:02"
+  candidateAnswerTime?: string | undefined; // e.g. "02:14–03:02"
   hasFollowUp?: boolean;
-  aiFollowUp?: string;
-  aiFollowUpTime?: string; // e.g. "03:02"
-  candidateFollowUpAnswer?: string;
-  candidateFollowUpTime?: string; // e.g. "03:02–03:41"
+  aiFollowUp?: string | undefined;
+  aiFollowUpTime?: string | undefined; // e.g. "03:02"
+  candidateFollowUpAnswer?: string | undefined;
+  candidateFollowUpTime?: string | undefined; // e.g. "03:02–03:41"
   requirementId?: string;
   requirementName?: string;
 }

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, ChevronRight } from "lucide-react";
 
 const steps = [
@@ -11,20 +11,17 @@ const steps = [
   {
     number: "2",
     title: "Add Candidates",
-    description:
-      "Upload candidate resumes directly under the relevant job.",
+    description: "Upload candidate resumes directly under the relevant job.",
   },
   {
     number: "3",
     title: "AI Match",
-    description:
-      "FiltR compares the candidate's evidence against the specific job requirements.",
+    description: "FiltR compares the candidate's evidence against the specific job requirements.",
   },
   {
     number: "4",
     title: "AI Interview",
-    description:
-      "Generate a personalized interview with adaptive follow-up questions.",
+    description: "Generate a personalized interview with adaptive follow-up questions.",
   },
   {
     number: "5",
@@ -37,24 +34,20 @@ const steps = [
 const mvpFeatures = [
   {
     title: "AI Resume Extraction",
-    description:
-      "Turn unstructured resumes into structured candidate profiles.",
+    description: "Turn unstructured resumes into structured candidate profiles.",
     featured: true,
   },
   {
     title: "Job-Specific AI Matching",
-    description:
-      "Compare every candidate against the requirements of the specific job.",
+    description: "Compare every candidate against the requirements of the specific job.",
   },
   {
     title: "Adaptive AI Interview",
-    description:
-      "Generate personalized questions and follow-ups based on the candidate and role.",
+    description: "Generate personalized questions and follow-ups based on the candidate and role.",
   },
   {
     title: "Evidence-Based Reports",
-    description:
-      "Connect interview answers to job requirements with traceable evidence.",
+    description: "Connect interview answers to job requirements with traceable evidence.",
   },
   {
     title: "Human Review",
@@ -62,6 +55,10 @@ const mvpFeatures = [
       "Give recruiters structured insights while keeping the final hiring decision with them.",
   },
 ];
+
+export const Route = createFileRoute("/")({
+  component: HomePage,
+});
 
 function FiltrLogo({ large = false }: { large?: boolean }) {
   return (
@@ -76,17 +73,13 @@ function FiltrLogo({ large = false }: { large?: boolean }) {
 
       <div className="leading-none">
         <div
-          className={`font-bold tracking-tight text-[#0a0d14] ${
-            large ? "text-3xl" : "text-2xl"
-          }`}
+          className={`font-bold tracking-tight text-[#0a0d14] ${large ? "text-3xl" : "text-2xl"}`}
         >
           Filt<span className="text-[#1857ff]">R</span>
         </div>
 
         <div
-          className={`mt-1 whitespace-nowrap text-[#5e6675] ${
-            large ? "text-[9px]" : "text-[7px]"
-          }`}
+          className={`mt-1 whitespace-nowrap text-[#5e6675] ${large ? "text-[9px]" : "text-[7px]"}`}
         >
           AI-Powered Recruitment Intelligence
         </div>
@@ -157,15 +150,13 @@ export default function HomePage() {
           <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-[-0.045em] text-[#0a0d14] sm:text-5xl md:text-6xl lg:text-[72px] lg:leading-[0.98]">
             Stop screening resumes.
             <br />
-            <span className="italic font-medium">
-              Start understanding candidates.
-            </span>
+            <span className="italic font-medium">Start understanding candidates.</span>
           </h1>
 
           <p className="mx-auto mt-7 max-w-3xl text-base leading-7 text-[#657083] md:text-lg">
-            FiltR helps recruiters move from resumes to evidence-backed
-            candidate insights — combining AI-powered resume analysis, job
-            matching, and adaptive interviews in one workflow.
+            FiltR helps recruiters move from resumes to evidence-backed candidate insights —
+            combining AI-powered resume analysis, job matching, and adaptive interviews in one
+            workflow.
           </p>
 
           <div className="mt-10 flex flex-col items-center">
@@ -197,10 +188,7 @@ export default function HomePage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section
-        id="how-it-works"
-        className="border-y border-blue-100/70 bg-white/35 px-6 py-24"
-      >
+      <section id="how-it-works" className="border-y border-blue-100/70 bg-white/35 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#1857ff]">
@@ -217,18 +205,13 @@ export default function HomePage() {
 
             <div className="space-y-8">
               {steps.map((step) => (
-                <div
-                  key={step.number}
-                  className="relative flex gap-6 md:gap-8"
-                >
+                <div key={step.number} className="relative flex gap-6 md:gap-8">
                   <div className="relative z-10 flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-2 border-[#1857ff] bg-[#f4f8ff] text-lg font-semibold text-[#1857ff]">
                     {step.number}
                   </div>
 
                   <div className="pb-2">
-                    <h3 className="text-2xl font-bold text-[#1857ff] md:text-3xl">
-                      {step.title}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-[#1857ff] md:text-3xl">{step.title}</h3>
 
                     <p className="mt-1 max-w-4xl text-base leading-7 text-[#657083]">
                       {step.description}
@@ -259,9 +242,7 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-2">
             {/* Traditional Screening */}
             <div className="rounded-[28px] border-2 border-[#1857ff] bg-white/50 p-8 shadow-sm">
-              <h3 className="text-xl font-bold text-[#1857ff]">
-                Traditional Screening
-              </h3>
+              <h3 className="text-xl font-bold text-[#1857ff]">Traditional Screening</h3>
 
               <div className="mt-6 space-y-4">
                 {[
@@ -273,10 +254,7 @@ export default function HomePage() {
                   "Black-box recommendation",
                   "Manual screening notes",
                 ].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 text-[#1857ff]"
-                  >
+                  <div key={item} className="flex items-center gap-3 text-[#1857ff]">
                     <Check className="h-4 w-4" />
                     <span>{item}</span>
                   </div>
@@ -310,10 +288,7 @@ export default function HomePage() {
       </section>
 
       {/* OUR MVP */}
-      <section
-        id="mvp"
-        className="border-y border-blue-100/70 bg-white/30 px-6 py-24"
-      >
+      <section id="mvp" className="border-y border-blue-100/70 bg-white/30 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-14 flex items-end justify-between gap-8">
             <div>
@@ -321,14 +296,11 @@ export default function HomePage() {
                 Product
               </p>
 
-              <h2 className="text-4xl font-bold tracking-tight md:text-6xl">
-                Our MVP
-              </h2>
+              <h2 className="text-4xl font-bold tracking-tight md:text-6xl">Our MVP</h2>
             </div>
 
             <div className="hidden max-w-sm text-right text-sm leading-6 text-[#657083] md:block">
-              AI-powered recruitment intelligence built around structured
-              candidate evidence.
+              AI-powered recruitment intelligence built around structured candidate evidence.
             </div>
           </div>
 
@@ -344,14 +316,10 @@ export default function HomePage() {
               >
                 <div
                   className={`mb-6 flex h-10 w-10 items-center justify-center rounded-full ${
-                    feature.featured
-                      ? "bg-white/15"
-                      : "bg-blue-50 text-[#1857ff]"
+                    feature.featured ? "bg-white/15" : "bg-blue-50 text-[#1857ff]"
                   }`}
                 >
-                  <span className="text-sm font-bold">
-                    0{index + 1}
-                  </span>
+                  <span className="text-sm font-bold">0{index + 1}</span>
                 </div>
 
                 <h3
@@ -395,15 +363,12 @@ export default function HomePage() {
                     Filt<span className="text-blue-100">R</span>
                   </div>
 
-                  <div className="text-[8px] text-blue-50">
-                    AI-Powered Recruitment Intelligence
-                  </div>
+                  <div className="text-[8px] text-blue-50">AI-Powered Recruitment Intelligence</div>
                 </div>
               </div>
 
               <p className="max-w-sm text-sm leading-6 text-blue-50">
-                AI-powered recruitment intelligence for evidence-driven
-                hiring.
+                AI-powered recruitment intelligence for evidence-driven hiring.
               </p>
 
               <p className="mt-12 text-xs text-blue-100">

@@ -6,10 +6,10 @@ import { Metric } from "@/components/shared/Metric";
 
 interface InterviewCompleteProps {
   candidateName: string;
-  jobTitle?: string;
+  jobTitle?: string | undefined;
   totalQuestionsAnswered: number;
   durationMinutes: number;
-  completedAt?: string;
+  completedAt?: string | undefined;
 }
 
 export function InterviewComplete({
