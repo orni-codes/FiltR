@@ -152,9 +152,7 @@
 
   body {
     background-color: var(--color-background);
-    background-image:
-      radial-gradient(circle at 12% 0%, oklch(0.93 0.045 268 / 0.42), transparent 28rem),
-      radial-gradient(circle at 88% 8%, oklch(0.95 0.025 225 / 0.28), transparent 24rem);
+    background-image: radial-gradient(circle at 12% 0%, oklch(0.93 0.045 268 / 0.42), transparent 28rem), radial-gradient(circle at 88% 8%, oklch(0.95 0.025 225 / 0.28), transparent 24rem);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     letter-spacing: 0;
@@ -196,17 +194,14 @@
   animation: filtr-pulse 1.7s ease-in-out infinite;
 }
 
+
 @utility filtr-grid {
-  background-image:
-    linear-gradient(to right, oklch(0.7 0.02 265 / 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.7 0.02 265 / 0.055) 1px, transparent 1px);
+  background-image: linear-gradient(to right, oklch(0.7 0.02 265 / 0.055) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.7 0.02 265 / 0.055) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
 @utility filtr-glow {
-  box-shadow:
-    0 0 0 1px oklch(0.49 0.22 268 / 0.1),
-    0 18px 55px oklch(0.35 0.12 268 / 0.09);
+  box-shadow: 0 0 0 1px oklch(0.49 0.22 268 / 0.1), 0 18px 55px oklch(0.35 0.12 268 / 0.09);
 }
 
 @utility filtr-surface {

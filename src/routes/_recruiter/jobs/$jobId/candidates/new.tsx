@@ -15,12 +15,15 @@ import {
   ChevronRight,
   Plus,
 } from "lucide-react";
-import { filtRStore } from "@/lib/store";
+import { uploadCandidate, extractCandidate, matchApplication } from "@/lib/api";
+import { hydrateStoreFromBackend, useFiltRStore } from "@/lib/store";
 import { aiService } from "@/lib/ai/service";
 import type { RequirementMatchAnalysis } from "@/lib/ai/service";
 import type { ParsedResumeProfile } from "@/lib/ai/service";
 
-export const Route = createFileRoute("/_recruiter/jobs/$jobId/candidates/new")({
+export const Route = createFileRoute(
+  "/_recruiter/jobs/$jobId/candidates/new"
+)({
   component: AddCandidatePage,
 });
 
@@ -29,7 +32,8 @@ type Step = "input" | "parsing" | "analyzing" | "review";
 export function AddCandidatePage() {
   const { jobId } = Route.useParams();
   const navigate = useNavigate();
-  const job = filtRStore.getJob(jobId);
+  const { jobs } = useFiltRStore();
+  const job = jobs.find((item) => item.id === jobId);
 
   const [step, setStep] = useState<Step>("input");
   const [candidateName, setCandidateName] = useState("");
@@ -38,15 +42,24 @@ export function AddCandidatePage() {
   const [fileSize, setFileSize] = useState("");
   const [resumeText, setResumeText] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [createdApplicationId, setCreatedApplicationId] = useState<number | null>(null);
+  const [createdCandidateId, setCreatedCandidateId] = useState<number | null>(null);
 
-  const [parsedProfile, setParsedProfile] = useState<ParsedResumeProfile | null>(null);
-  const [resumeAnalysis, setResumeAnalysis] = useState<RequirementMatchAnalysis[] | null>(null);
+  const [parsedProfile, setParsedProfile] = useState<ParsedResumeProfile | null>(
+    null
+  );
+  const [resumeAnalysis, setResumeAnalysis] =
+    useState<RequirementMatchAnalysis[] | null>(null);
 
   if (!job) {
     return (
       <div className="p-8 text-center">
         <p className="text-zinc-400">Job not found.</p>
-        <Link to="/jobs" className="mt-4 inline-block text-sm text-amber-500 hover:underline">
+        <Link
+          to="/jobs"
+          className="mt-4 inline-block text-sm text-amber-500 hover:underline"
+        >
           Return to Jobs
         </Link>
       </div>
@@ -56,6 +69,7 @@ export function AddCandidatePage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       setFileName(file.name);
       setFileSize((file.size / 1024).toFixed(1) + " KB");
 
@@ -71,7 +85,7 @@ export function AddCandidatePage() {
             cleanName
               .split(" ")
               .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(" "),
+              .join(" ")
           );
         }
       }
@@ -87,62 +101,46 @@ export function AddCandidatePage() {
         };
         reader.readAsText(file);
       } else {
-        setResumeText(
-          `Resume document uploaded: ${file.name}. Candidate profile will be extracted by FiltR AI.`,
-        );
+        setResumeText(`Resume document uploaded: ${file.name}. Candidate profile will be extracted by FiltR AI.`);
       }
     }
   };
 
   const handleProcessCandidate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!candidateName || !candidateEmail) return;
-
+    if (!candidateName || !candidateEmail || !selectedFile) return;
     try {
       setStep("parsing");
-      setStatusMessage("Uploading and extracting resume text...");
-
-      // 1. AI Parse Resume
-      const profile = await aiService.analyzeResume(
-        candidateName,
-        resumeText || `Resume for ${candidateName}`,
-      );
-      setParsedProfile(profile);
-
-      // 2. AI Analyze against Job Requirements
+      setStatusMessage("Uploading resume to FiltR backend...");
+      const uploaded = await uploadCandidate(job.id, selectedFile);
+      setCreatedApplicationId(uploaded.application_id);
+      setCreatedCandidateId(uploaded.candidate_id);
       setStep("analyzing");
-      setStatusMessage("Analyzing qualifications against job requirements...");
-      const analysis = await aiService.analyzeResumeAgainstRequirements(profile, job.requirements);
-      setResumeAnalysis(analysis);
-
+      setStatusMessage("Extracting candidate profile with the backend AI...");
+      await extractCandidate(String(uploaded.candidate_id));
+      setStatusMessage("Matching candidate evidence to job requirements...");
+      await matchApplication(String(uploaded.application_id));
+      await hydrateStoreFromBackend();
+      setParsedProfile({ name: candidateName, email: candidateEmail, skills: [], experience: "—", projects: [], connectedClaims: [] } as any);
+      setResumeAnalysis([]);
       setStep("review");
     } catch (err) {
       console.error(err);
-      setStatusMessage("Processing encountered an error. Please try again.");
+      setStatusMessage(err instanceof Error ? err.message : "Processing encountered an error. Please try again.");
+      setStep("input");
     }
   };
 
-  const handleSaveCandidate = () => {
-    if (!parsedProfile || !resumeAnalysis) return;
-
-    const newCandidate = filtRStore.addCandidate({
-      jobId: job.id,
-      name: candidateName,
-      email: candidateEmail,
-      appliedDate: new Date().toISOString().split("T")[0] ?? new Date().toISOString(),
-      stage: "Review",
-      profile: parsedProfile,
-      resumeAnalysis,
-    });
-
-    // Generate interview for the new candidate
-    filtRStore.generateMockInterview(newCandidate.id, job.id, job.requirements);
-
-    navigate({
-      to: "/jobs/$jobId/candidates/$candidateId",
-      params: { jobId: job.id, candidateId: newCandidate.id },
-      search: { tab: "overview" },
-    });
+  const handleSaveCandidate = async () => {
+    if (!createdCandidateId || !createdApplicationId) return;
+    try {
+      const interview = await (await import("@/lib/api")).createInterview(String(createdApplicationId));
+      await hydrateStoreFromBackend();
+      navigate({ to: "/jobs/$jobId/candidates/$candidateId", params: { jobId: job.id, candidateId: String(createdCandidateId) }, search: { tab: "overview" } });
+      void interview;
+    } catch (error) {
+      console.error("Failed to create interview", error);
+    }
   };
 
   return (
@@ -267,7 +265,9 @@ export function AddCandidatePage() {
                       </>
                     )}
                   </div>
-                  <p className="text-xs text-zinc-500">Supports PDF, DOCX, TXT (up to 10MB)</p>
+                  <p className="text-xs text-zinc-500">
+                    Supports PDF, DOCX, TXT (up to 10MB)
+                  </p>
                 </label>
               </div>
             </div>
@@ -334,7 +334,9 @@ export function AddCandidatePage() {
           <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-100">{candidateName}</h2>
+                <h2 className="text-lg font-semibold text-zinc-100">
+                  {candidateName}
+                </h2>
                 <p className="text-xs text-zinc-400">{candidateEmail}</p>
               </div>
               <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono rounded-full flex items-center gap-1.5">
@@ -350,7 +352,9 @@ export function AddCandidatePage() {
                   <Briefcase className="w-3.5 h-3.5 text-zinc-500" />
                   Experience Highlights
                 </h3>
-                <p className="text-xs leading-relaxed text-zinc-300">{parsedProfile.experience}</p>
+                <p className="text-xs leading-relaxed text-zinc-300">
+                  {parsedProfile.experience}
+                </p>
                 <p className="mt-2 text-xs leading-relaxed text-zinc-400">
                   {parsedProfile.summary}
                 </p>
@@ -390,7 +394,8 @@ export function AddCandidatePage() {
                   Resume ↔ Job Requirements Analysis
                 </h2>
                 <p className="text-xs text-zinc-400">
-                  Initial requirement verification from resume evidence (No scores or rankings)
+                  Initial requirement verification from resume evidence (No scores
+                  or rankings)
                 </p>
               </div>
               <span className="text-xs font-mono text-zinc-500">
@@ -404,21 +409,20 @@ export function AddCandidatePage() {
                   match.status === "Validated"
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                     : match.status === "Partial"
-                      ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                      : "bg-zinc-800 text-zinc-400 border-zinc-700";
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-zinc-800 text-zinc-400 border-zinc-700";
 
                 return (
-                  <div
-                    key={i}
-                    className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-3"
-                  >
+                  <div key={i} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="space-y-1 max-w-xl">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-zinc-200">
                           {match.requirementName}
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 font-mono">{match.evidence}</p>
+                      <p className="text-xs text-zinc-400 font-mono">
+                        {match.evidence}
+                      </p>
                     </div>
                     <div>
                       <span
@@ -427,8 +431,8 @@ export function AddCandidatePage() {
                         {match.status === "Validated"
                           ? "Validated"
                           : match.status === "Partial"
-                            ? "Partial"
-                            : "Needs Validation"}
+                          ? "Partial"
+                          : "Needs Validation"}
                       </span>
                     </div>
                   </div>

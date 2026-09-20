@@ -1,225 +1,74 @@
 import { createFileRoute, getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CameraPreview } from "@/components/interview/CameraPreview";
 import { InterviewProgress } from "@/components/interview/InterviewProgress";
 import { InterviewQuestion } from "@/components/interview/InterviewQuestion";
 import { FollowUpQuestion } from "@/components/interview/FollowUpQuestion";
 import { RecordingControls } from "@/components/interview/RecordingControls";
 import { ProcessingState } from "@/components/interview/ProcessingState";
-import {
-  DEMO_INTERVIEW_QUESTIONS,
-  loadSessionState,
-  saveSessionState,
-  type InterviewStepState,
-  type DemoInterviewQuestion,
-} from "@/lib/interview-session";
+import { startInterview, submitInterviewAnswer } from "@/lib/api";
+import type { DemoInterviewQuestion, InterviewStepState } from "@/lib/interview-session";
 
-export const Route = createFileRoute("/interview/$token/session")({
-  component: InterviewSessionPage,
-});
-
+export const Route = createFileRoute("/interview/$token/session")({ component: InterviewSessionPage });
 const parentRoute = getRouteApi("/interview/$token");
 
+function toQuestion(raw: any): DemoInterviewQuestion {
+  return { id: String(raw.id), requirementId: "backend", requirementName: "Interview signal", requirementType: "Required", question: raw.question_text, timeEstimateSeconds: 120 } as DemoInterviewQuestion;
+}
+
 function InterviewSessionPage() {
-  const { token, candidate } = parentRoute.useLoaderData();
+  const data = parentRoute.useLoaderData();
   const navigate = useNavigate();
-
-  // Load persistent or initial state
-  const [session, setSession] = useState(() => loadSessionState(token));
+  const [question, setQuestion] = useState<DemoInterviewQuestion | null>(null);
+  const [questionNumber, setQuestionNumber] = useState(1);
+  const [stepState, setStepState] = useState<InterviewStepState>("QUESTION");
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const timerRef = useRef<number | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
+  const [transcript, setTranscript] = useState("");
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+  const interviewId = String(data.interview_id);
+  const totalQuestions = data.question_count || 5;
 
-  const questions = DEMO_INTERVIEW_QUESTIONS;
-  const currentQIndex = session.currentQuestionIndex;
-  const activeQuestion: DemoInterviewQuestion = questions[currentQIndex] ?? questions[0]!;
-  const isFollowUp = session.isInFollowUp && !!activeQuestion.followUpQuestion;
-  const displayQuestion = isFollowUp ? activeQuestion.followUpQuestion! : activeQuestion;
-  const totalQuestions = questions.length;
-  const isLastQuestion =
-    currentQIndex === totalQuestions - 1 &&
-    (!activeQuestion.triggersFollowUp || session.isInFollowUp);
-
-  // Synchronize session state to sessionStorage
   useEffect(() => {
-    saveSessionState(token, session);
-  }, [session, token]);
+    startInterview(interviewId).then((result) => { setQuestion(toQuestion(result.question)); setQuestionNumber(result.question.question_number || 1); }).catch(console.error);
+  }, [interviewId]);
 
-  // Handle Recording Timer
   useEffect(() => {
-    if (session.stepState === "RECORDING") {
-      setRecordingSeconds(0);
-      const interval = window.setInterval(() => {
-        setRecordingSeconds((prev) => prev + 1);
-      }, 1000);
-      timerRef.current = interval;
-      return () => {
-        clearInterval(interval);
-      };
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      return undefined;
-    }
-  }, [session.stepState]);
+    if (stepState !== "RECORDING") return;
+    const timer = window.setInterval(() => setRecordingSeconds((value) => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [stepState]);
 
-  // Handle MediaRecorder hookup
   const handleMediaStreamReady = (stream: MediaStream) => {
-    try {
-      if (typeof MediaRecorder !== "undefined") {
-        const recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            recordedChunksRef.current.push(e.data);
-          }
-        };
-        mediaRecorderRef.current = recorder;
-      }
-    } catch (e) {
-      console.warn("MediaRecorder could not be initialized, using demo fallback", e);
-    }
+    try { recorderRef.current = new MediaRecorder(stream); recorderRef.current.ondataavailable = (event) => { if (event.data.size) chunksRef.current.push(event.data); }; } catch {}
   };
 
   const startRecording = () => {
-    try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "inactive") {
-        recordedChunksRef.current = [];
-        mediaRecorderRef.current.start(1000);
-      }
-    } catch (e) {
-      console.warn("MediaRecorder start error", e);
+    setTranscript(""); setRecordingSeconds(0); chunksRef.current = [];
+    try { if (recorderRef.current?.state === "inactive") recorderRef.current.start(500); } catch {}
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try { const recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.onresult = (event: any) => { let text = ""; for (let i = 0; i < event.results.length; i++) text += event.results[i][0].transcript + " "; setTranscript(text.trim()); }; recognitionRef.current = recognition; recognition.start(); } catch {}
     }
-    setSession((prev) => ({
-      ...prev,
-      stepState: "RECORDING",
-    }));
+    setStepState("RECORDING");
   };
 
-  const stopAndSubmit = () => {
+  const stopAndSubmit = async () => {
+    try { recorderRef.current?.stop(); recognitionRef.current?.stop(); } catch {}
+    setStepState("ANALYZING");
+    const answer = transcript.trim() || "Candidate recorded a spoken response.";
     try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-        mediaRecorderRef.current.stop();
+      const result = await submitInterviewAnswer(interviewId, { question_id: Number(question?.id), answer_text: answer, transcript: answer, duration_seconds: recordingSeconds });
+      if (result.completed || !result.next_question) {
+        navigate({ to: "/interview/$token/complete", params: { token: data.token } });
+        return;
       }
-    } catch (e) {
-      console.warn("MediaRecorder stop error", e);
-    }
-
-    // Move to ANALYZING state
-    setSession((prev) => ({
-      ...prev,
-      stepState: "ANALYZING",
-      answers: [
-        ...prev.answers,
-        {
-          questionId: displayQuestion.id,
-          requirementName: displayQuestion.requirementName,
-          durationSeconds: recordingSeconds,
-          recordedAt: new Date().toISOString(),
-          isFollowUp,
-        },
-      ],
-      totalAnswered: prev.totalAnswered + 1,
-    }));
-
-    // Simulate intentional AI response analysis
-    setTimeout(() => {
-      // Check if this question triggers an adaptive follow-up clarification
-      if (
-        !session.isInFollowUp &&
-        activeQuestion.triggersFollowUp &&
-        activeQuestion.followUpQuestion
-      ) {
-        setSession((prev) => ({
-          ...prev,
-          isInFollowUp: true,
-          stepState: "FOLLOW_UP",
-        }));
-      } else {
-        // Move to next question or complete
-        const nextIndex = currentQIndex + 1;
-        if (nextIndex >= questions.length) {
-          setSession((prev) => ({
-            ...prev,
-            stepState: "COMPLETE",
-            completedAt: new Date().toISOString(),
-          }));
-          void navigate({
-            to: "/interview/$token/complete",
-            params: { token },
-          });
-        } else {
-          setSession((prev) => ({
-            ...prev,
-            currentQuestionIndex: nextIndex,
-            isInFollowUp: false,
-            stepState: "QUESTION",
-          }));
-        }
-      }
-    }, 2400);
+      setQuestion(toQuestion(result.next_question)); setQuestionNumber(result.next_question.question_number || questionNumber + 1); setStepState("QUESTION"); setRecordingSeconds(0);
+    } catch (error) { console.error(error); setStepState("QUESTION"); }
   };
 
-  return (
-    <div className="animate-workspace-enter mx-auto max-w-5xl space-y-5">
-      {/* Top progress */}
-      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-        <div>
-          <div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Live interview
-          </div>
-          <div className="mt-1 text-xs font-medium text-white">
-            {displayQuestion.requirementName}
-          </div>
-        </div>
-        <div className="min-w-[180px]">
-          <InterviewProgress
-            currentQuestionNumber={currentQIndex + 1}
-            totalQuestions={totalQuestions}
-            isFollowUp={isFollowUp}
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-12">
-        {/* Left column: Live Camera Feed */}
-        <div className="lg:col-span-5 flex flex-col justify-between rounded-3xl border border-white/10 bg-black/25 p-2 shadow-2xl shadow-black/30">
-          <CameraPreview
-            candidateInitials={candidate.initials}
-            candidateName={candidate.name}
-            isRecording={session.stepState === "RECORDING"}
-            recordingSeconds={recordingSeconds}
-            onMediaStreamReady={handleMediaStreamReady}
-            className="aspect-square lg:aspect-auto lg:h-full min-h-[260px]"
-          />
-        </div>
-
-        {/* Right column: Question / Processing State */}
-        <div className="lg:col-span-7 flex flex-col justify-between space-y-4 rounded-3xl border border-white/10 bg-white/[0.025] p-5 sm:p-6">
-          {session.stepState === "ANALYZING" ? (
-            <ProcessingState
-              requirementName={displayQuestion.requirementName}
-              isFollowUp={isFollowUp}
-            />
-          ) : isFollowUp ? (
-            <FollowUpQuestion question={displayQuestion} />
-          ) : (
-            <InterviewQuestion question={displayQuestion} />
-          )}
-
-          {/* Recording & submission controls */}
-          <RecordingControls
-            stepState={session.stepState}
-            isRecording={session.stepState === "RECORDING"}
-            recordingSeconds={recordingSeconds}
-            onStartRecording={startRecording}
-            onStopAndSubmit={stopAndSubmit}
-            isLastQuestion={isLastQuestion}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  if (!question) return <div className="mx-auto max-w-5xl p-8 text-sm text-muted-foreground">Preparing your first interview question…</div>;
+  const isLastQuestion = questionNumber >= totalQuestions;
+  return <div className="animate-workspace-enter mx-auto max-w-5xl space-y-5"><div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"><div><div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Live interview</div><div className="mt-1 text-xs font-medium text-white">Adaptive question {questionNumber}</div></div><div className="min-w-[180px]"><InterviewProgress currentQuestionNumber={questionNumber} totalQuestions={totalQuestions} isFollowUp={false} /></div></div><div className="grid gap-5 lg:grid-cols-12"><div className="lg:col-span-5 flex flex-col justify-between rounded-3xl border border-white/10 bg-black/25 p-2 shadow-2xl shadow-black/30"><CameraPreview candidateInitials={(data.candidate?.name || "C").split(/\s+/).map((x: string) => x[0]).join("").slice(0,2).toUpperCase()} candidateName={data.candidate?.name || "Candidate"} isRecording={stepState === "RECORDING"} recordingSeconds={recordingSeconds} onMediaStreamReady={handleMediaStreamReady} className="aspect-square lg:aspect-auto lg:h-full min-h-[260px]" /></div><div className="lg:col-span-7 flex flex-col justify-between space-y-4 rounded-3xl border border-white/10 bg-white/[0.025] p-5 sm:p-6">{stepState === "ANALYZING" ? <ProcessingState requirementName="Interview signal" isFollowUp={false} /> : <InterviewQuestion question={question} />}<RecordingControls stepState={stepState} isRecording={stepState === "RECORDING"} recordingSeconds={recordingSeconds} onStartRecording={startRecording} onStopAndSubmit={stopAndSubmit} isLastQuestion={isLastQuestion} /></div></div></div>;
 }

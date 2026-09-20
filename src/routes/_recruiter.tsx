@@ -2,8 +2,10 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { hydrateStoreFromBackend } from "@/lib/store";
 
 export const Route = createFileRoute("/_recruiter")({
+  loader: async () => { await hydrateStoreFromBackend(); return null; },
   component: RecruiterLayout,
 });
 

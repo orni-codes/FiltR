@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as RecruiterRouteImport } from './routes/_recruiter'
 import { Route as InterviewTokenRouteImport } from './routes/interview/$token'
 import { Route as RecruiterJobsIndexRouteImport } from './routes/_recruiter/jobs/index'
@@ -27,11 +26,6 @@ import { Route as RecruiterJobsJobIdCandidatesIndexRouteImport } from './routes/
 import { Route as RecruiterJobsJobIdCandidatesCandidateIdRouteImport } from './routes/_recruiter/jobs/$jobId/candidates/$candidateId'
 import { Route as RecruiterJobsJobIdCandidatesNewRouteImport } from './routes/_recruiter/jobs/$jobId/candidates/new'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RecruiterRoute = RecruiterRouteImport.update({
   id: '/_recruiter',
   getParentRoute: () => rootRouteImport,
@@ -120,7 +114,7 @@ const RecruiterJobsJobIdCandidatesNewRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof RecruiterRouteWithChildren
   '/interview/$token': typeof InterviewTokenRouteWithChildren
   '/jobs/$jobId': typeof RecruiterJobsJobIdRouteWithChildren
   '/jobs/new': typeof RecruiterJobsNewRoute
@@ -138,7 +132,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$jobId/candidates/': typeof RecruiterJobsJobIdCandidatesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof RecruiterRouteWithChildren
   '/jobs/new': typeof RecruiterJobsNewRoute
   '/interview/$token/complete': typeof InterviewTokenCompleteRoute
   '/interview/$token/device-check': typeof InterviewTokenDeviceCheckRoute
@@ -155,7 +149,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_recruiter': typeof RecruiterRouteWithChildren
   '/interview/$token': typeof InterviewTokenRouteWithChildren
   '/_recruiter/jobs/$jobId': typeof RecruiterJobsJobIdRouteWithChildren
@@ -210,7 +203,6 @@ export interface FileRouteTypes {
     | '/jobs/$jobId/candidates'
   id:
     | '__root__'
-    | '/'
     | '/_recruiter'
     | '/interview/$token'
     | '/_recruiter/jobs/$jobId'
@@ -230,20 +222,12 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   RecruiterRoute: typeof RecruiterRouteWithChildren
   InterviewTokenRoute: typeof InterviewTokenRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_recruiter': {
       id: '/_recruiter'
       path: ''
@@ -419,7 +403,6 @@ const InterviewTokenRouteWithChildren = InterviewTokenRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   RecruiterRoute: RecruiterRouteWithChildren,
   InterviewTokenRoute: InterviewTokenRouteWithChildren,
 }

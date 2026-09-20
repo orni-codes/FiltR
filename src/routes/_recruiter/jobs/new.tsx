@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/shared/Panel";
 import { aiService, type ExtractedRequirement } from "@/lib/ai/service";
-import { filtRStore } from "@/lib/store";
+import { createJob, extractJobRequirements } from "@/lib/api";
+import { hydrateStoreFromBackend } from "@/lib/store";
 import type { Job, JobRequirement } from "@/types/filtr";
 
 export const Route = createFileRoute("/_recruiter/jobs/new")({
@@ -107,45 +108,15 @@ function CreateJobPage() {
     );
   };
 
-  const handleSaveJob = () => {
-    const slug = jobTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    const newJobId = `${slug}-${Date.now().toString().slice(-4)}`;
-
-    const convertedRequirements: JobRequirement[] = requirements.map((r) => ({
-      id: r.id,
-      name: r.name,
-      type: r.type,
-      coverage: r.coverage || "2 questions",
-      status: r.status || "Validated",
-    }));
-
-    const newJob: Job = {
-      id: newJobId,
-      title: jobTitle,
-      location,
-      workMode,
-      experience,
-      employmentType,
-      description,
-      requiredSkills: requirements.filter((r) => r.type === "Required").map((r) => r.name),
-      preferredSkills: requirements.filter((r) => r.type === "Preferred").map((r) => r.name),
-      requirements: convertedRequirements,
-      candidateCount: 0,
-      interviewCount: 0,
-      activity: "Created just now",
-      status: "Active",
-    };
-
-    filtRStore.addJob(newJob);
-
-    navigate({
-      to: "/jobs/$jobId",
-      params: { jobId: newJobId },
-    });
+  const handleSaveJob = async () => {
+    try {
+      const created = await createJob(jobTitle.trim(), description.trim());
+      try { await extractJobRequirements(String(created.job_id)); } catch (error) { console.warn("Requirement extraction failed", error); }
+      await hydrateStoreFromBackend();
+      navigate({ to: "/jobs/$jobId", params: { jobId: String(created.job_id) } });
+    } catch (error) {
+      console.error("Failed to create job", error);
+    }
   };
 
   return (
@@ -166,8 +137,7 @@ function CreateJobPage() {
             Create New Job Workspace
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Paste your job description to extract evidence criteria and generate an AI interview
-            structure.
+            Paste your job description to extract evidence criteria and generate an AI interview structure.
           </p>
         </div>
 
@@ -289,8 +259,7 @@ function CreateJobPage() {
             </div>
             <h2 className="text-lg font-bold text-foreground">Analyzing Job Description...</h2>
             <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-              FiltR AI is extracting core competencies, technical criteria, and behavioral
-              requirements for {jobTitle}.
+              FiltR AI is extracting core competencies, technical criteria, and behavioral requirements for {jobTitle}.
             </p>
           </Panel>
         )}

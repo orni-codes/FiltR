@@ -56,19 +56,14 @@ export async function extractRequirements(
 
   const titleLower = jobTitle.toLowerCase();
 
-  if (
-    titleLower.includes("data") ||
-    titleLower.includes("analyst") ||
-    titleLower.includes("analytics")
-  ) {
+  if (titleLower.includes("data") || titleLower.includes("analyst") || titleLower.includes("analytics")) {
     return [
       {
         id: `req-${Date.now()}-1`,
         name: "Advanced SQL and dimensional data modeling",
         category: "Technical",
         type: "Required",
-        description:
-          "Ability to architect robust fact/dimension tables, optimize query latency, and reconcile metric definitions.",
+        description: "Ability to architect robust fact/dimension tables, optimize query latency, and reconcile metric definitions.",
         coverage: "3 questions",
         status: "Validated",
       },
@@ -77,8 +72,7 @@ export async function extractRequirements(
         name: "Dashboard design and data storytelling",
         category: "Communication",
         type: "Required",
-        description:
-          "Experience structuring cohort retention curves and executive dashboards tailored to business stakeholders.",
+        description: "Experience structuring cohort retention curves and executive dashboards tailored to business stakeholders.",
         coverage: "2 questions",
         status: "Validated",
       },
@@ -87,8 +81,7 @@ export async function extractRequirements(
         name: "Cross-functional stakeholder communication",
         category: "Communication",
         type: "Required",
-        description:
-          "Demonstrated ability to align disagreeing departments around canonical metric dictionaries.",
+        description: "Demonstrated ability to align disagreeing departments around canonical metric dictionaries.",
         coverage: "2 questions",
         status: "Validated",
       },
@@ -97,8 +90,7 @@ export async function extractRequirements(
         name: "Statistical analysis and experimentation",
         category: "Analytical",
         type: "Required",
-        description:
-          "Practical knowledge of A/B testing, sample ratio mismatch detection, and variance evaluation.",
+        description: "Practical knowledge of A/B testing, sample ratio mismatch detection, and variance evaluation.",
         coverage: "2 questions",
         status: "Partial",
       },
@@ -107,8 +99,7 @@ export async function extractRequirements(
         name: "Python for analytical workflows",
         category: "Technical",
         type: "Preferred",
-        description:
-          "Automation of reporting pipelines, pandas data hygiene checks, and anomaly detection.",
+        description: "Automation of reporting pipelines, pandas data hygiene checks, and anomaly detection.",
         coverage: "1 question",
         status: "Partial",
       },
@@ -117,28 +108,21 @@ export async function extractRequirements(
         name: "Experience with product analytics",
         category: "Domain",
         type: "Preferred",
-        description:
-          "Hands-on tracking event taxonomy auditing, funnel analysis, and cohort segmentation in tools like Amplitude.",
+        description: "Hands-on tracking event taxonomy auditing, funnel analysis, and cohort segmentation in tools like Amplitude.",
         coverage: "2 questions",
         status: "Needs validation",
       },
     ];
   }
 
-  if (
-    titleLower.includes("design") ||
-    titleLower.includes("ui") ||
-    titleLower.includes("ux") ||
-    titleLower.includes("product design")
-  ) {
+  if (titleLower.includes("design") || titleLower.includes("ui") || titleLower.includes("ux") || titleLower.includes("product design")) {
     return [
       {
         id: `req-${Date.now()}-1`,
         name: "Figma and design systems",
         category: "Technical",
         type: "Required",
-        description:
-          "Comprehensive token architecture, component libraries, and responsive autolayout patterns.",
+        description: "Comprehensive token architecture, component libraries, and responsive autolayout patterns.",
         coverage: "3 questions",
         status: "Validated",
       },
@@ -147,8 +131,7 @@ export async function extractRequirements(
         name: "User research and usability testing",
         category: "Analytical",
         type: "Required",
-        description:
-          "Planning and moderating discovery interviews, synthesizing qualitative insights, and usability benchmarking.",
+        description: "Planning and moderating discovery interviews, synthesizing qualitative insights, and usability benchmarking.",
         coverage: "2 questions",
         status: "Validated",
       },
@@ -157,8 +140,7 @@ export async function extractRequirements(
         name: "Rapid interactive prototyping",
         category: "Technical",
         type: "Required",
-        description:
-          "Crafting realistic micro-interactions and testing complex flow validation prior to engineering handoff.",
+        description: "Crafting realistic micro-interactions and testing complex flow validation prior to engineering handoff.",
         coverage: "2 questions",
         status: "Validated",
       },
@@ -167,8 +149,7 @@ export async function extractRequirements(
         name: "Stakeholder presentation skills",
         category: "Communication",
         type: "Required",
-        description:
-          "Defending design trade-offs with business metrics and engineering feasibility constraints.",
+        description: "Defending design trade-offs with business metrics and engineering feasibility constraints.",
         coverage: "1 question",
         status: "Partial",
       },
@@ -177,8 +158,7 @@ export async function extractRequirements(
         name: "Motion design and micro-animations",
         category: "Technical",
         type: "Preferred",
-        description:
-          "Timing curves and transitional choreography in Framer, Rive, or After Effects.",
+        description: "Timing curves and transitional choreography in Framer, Rive, or After Effects.",
         coverage: "1 question",
         status: "Needs validation",
       },
@@ -192,8 +172,7 @@ export async function extractRequirements(
       name: "Core architectural engineering",
       category: "Technical",
       type: "Required",
-      description:
-        "Proven experience designing modular, scalable, and type-safe software architectures.",
+      description: "Proven experience designing modular, scalable, and type-safe software architectures.",
       coverage: "3 questions",
       status: "Validated",
     },
@@ -202,8 +181,7 @@ export async function extractRequirements(
       name: "System performance and optimization",
       category: "Technical",
       type: "Required",
-      description:
-        "Profiling bottlenecks, memory optimization, and latency reduction in production systems.",
+      description: "Profiling bottlenecks, memory optimization, and latency reduction in production systems.",
       coverage: "2 questions",
       status: "Validated",
     },
@@ -212,8 +190,7 @@ export async function extractRequirements(
       name: "Collaborative technical communication",
       category: "Communication",
       type: "Required",
-      description:
-        "Writing clear technical specs, mentoring team members, and code review diligence.",
+      description: "Writing clear technical specs, mentoring team members, and code review diligence.",
       coverage: "2 questions",
       status: "Validated",
     },
@@ -248,42 +225,28 @@ export async function analyzeResume(
   await delay(1600); // realistic parsing delay
 
   const words = resumeText.split(/\s+/).length;
-  const isExperienced =
-    words > 100 ||
-    resumeText.toLowerCase().includes("senior") ||
-    resumeText.toLowerCase().includes("lead");
+  const isExperienced = words > 100 || resumeText.toLowerCase().includes("senior") || resumeText.toLowerCase().includes("lead");
 
   return {
     name: candidateName,
     experience: isExperienced ? "3.5 years" : "2.2 years",
     summary: `Analytical professional with experience driving data modeling, stakeholder alignment, and metric governance. Proven track record delivering production data pipelines and cross-functional reporting systems.`,
-    skills: [
-      "SQL",
-      "Data Modeling",
-      "Python",
-      "Tableau",
-      "A/B Testing",
-      "Amplitude",
-      "Stakeholder Alignment",
-    ],
+    skills: ["SQL", "Data Modeling", "Python", "Tableau", "A/B Testing", "Amplitude", "Stakeholder Alignment"],
     projects: [
       {
         title: "Enterprise Revenue Data Mart",
         period: "2024–Present",
-        description:
-          "Architected canonical dimensional revenue schema in Snowflake, reducing query latency by 64% and unifying financial metrics.",
+        description: "Architected canonical dimensional revenue schema in Snowflake, reducing query latency by 64% and unifying financial metrics.",
       },
       {
         title: "Cohort Retention & Onboarding Analytics",
         period: "2023–2024",
-        description:
-          "Built automated retention curve models revealing drop-off patterns in onboarding, leading to product interventions.",
+        description: "Built automated retention curve models revealing drop-off patterns in onboarding, leading to product interventions.",
       },
       {
         title: "Automated Data Hygiene Pipeline",
         period: "2022–2023",
-        description:
-          "Developed Python alerting scripts to identify transaction anomalies and prevent reporting discrepancies.",
+        description: "Developed Python alerting scripts to identify transaction anomalies and prevent reporting discrepancies.",
       },
     ],
     education: [

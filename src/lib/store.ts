@@ -618,7 +618,8 @@ function getInitialStoreData(): StoreData {
           id: "aud-3",
           timestamp: "Sep 19, 09:16 AM",
           eventType: "Requirement Identified",
-          description: "Mapped resume claims to 6 role requirements for Data Analyst (Bengaluru).",
+          description:
+            "Mapped resume claims to 6 role requirements for Data Analyst (Bengaluru).",
           source: "Job Criteria Engine",
           requirementId: "req-sql",
           requirementName: "Advanced SQL and data modeling",
@@ -637,7 +638,8 @@ function getInitialStoreData(): StoreData {
           id: "aud-5",
           timestamp: "Sep 19, 10:06 AM",
           eventType: "Candidate Answered",
-          description: "Candidate submitted 1m 48s spoken answer explaining Kimball star schema.",
+          description:
+            "Candidate submitted 1m 48s spoken answer explaining Kimball star schema.",
           source: "Interview Stream @ 02:14",
           requirementId: "req-sql",
           requirementName: "Advanced SQL and data modeling",
@@ -832,10 +834,6 @@ export const filtRStore = {
     return () => listeners.delete(listener);
   },
 
-  getJob(jobId: string): Job | undefined {
-    return currentStore.jobs.find((job) => job.id === jobId);
-  },
-
   // Add Job
   addJob(newJob: Job): void {
     currentStore = {
@@ -864,20 +862,19 @@ export const filtRStore = {
     profile?: ParsedResumeProfile;
     resumeAnalysis?: RequirementMatchAnalysis[];
   }): Candidate {
-    const candidateId = `${candidateData.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString().slice(-4)}`;
+    const candidateId = `${candidateData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now().toString().slice(-4)}`;
     const interviewToken = `tok-${candidateId.substring(0, 3)}-${Date.now().toString().slice(-4)}`;
-
+    
     const initials = candidateData.name
-      .split(" ")
-      .map((n) => n[0] ?? "")
-      .join("")
+      .split(' ')
+      .map(n => n[0])
+      .join('')
       .toUpperCase();
 
     const newCandidate: Candidate = {
       id: candidateId,
       initials,
       name: candidateData.name,
-      email: candidateData.email,
       experience: candidateData.profile?.experience || "2 years",
       jobId: candidateData.jobId,
       interviewStatus: "Pending",
@@ -892,14 +889,13 @@ export const filtRStore = {
       resume = {
         candidateId,
         pages: 2,
-        analyzedDate: new Date().toISOString().split("T")[0] ?? new Date().toISOString(),
-        entries:
-          candidateData.profile.projects.map((p) => ({
-            company: "Previous Company",
-            title: p.title,
-            period: p.period,
-            bullets: [p.description],
-          })) || [],
+        analyzedDate: new Date().toISOString().slice(0, 10),
+        entries: candidateData.profile.projects?.map((p: any) => ({
+          company: "Previous Company",
+          title: p.title,
+          period: p.period,
+          bullets: [p.description],
+        })) || [],
         connectedClaims: candidateData.profile.connectedClaims || [],
       };
     }
@@ -917,7 +913,7 @@ export const filtRStore = {
       },
     };
     notifyListeners();
-
+    
     return newCandidate;
   },
 
@@ -925,10 +921,7 @@ export const filtRStore = {
   addInterview(interview: Interview, token: string): void {
     currentStore = {
       ...currentStore,
-      interviews: [
-        interview,
-        ...currentStore.interviews.filter((i) => i.candidateId !== interview.candidateId),
-      ],
+      interviews: [interview, ...currentStore.interviews.filter((i) => i.candidateId !== interview.candidateId)],
       tokenMap: {
         ...currentStore.tokenMap,
         [token]: interview.candidateId,
@@ -961,9 +954,7 @@ export const filtRStore = {
     // Calculate coverage counts
     const validated = updatedInterview.evidenceItems.filter((e) => e.status === "Validated").length;
     const partial = updatedInterview.evidenceItems.filter((e) => e.status === "Partial").length;
-    const needsValidation = updatedInterview.evidenceItems.filter(
-      (e) => e.status === "Needs validation",
-    ).length;
+    const needsValidation = updatedInterview.evidenceItems.filter((e) => e.status === "Needs validation").length;
     const total = updatedInterview.evidenceItems.length || 6;
 
     const newReport: CandidateReport = {
@@ -975,11 +966,7 @@ export const filtRStore = {
       partialCount: partial,
       needsValidationCount: needsValidation,
       confidence: validated >= 3 ? "High" : "Medium",
-      completedDate: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
+      completedDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       humanReviewRequired: needsValidation > 0 || partial > 0,
       auditTrail: [
         {
@@ -1022,7 +1009,10 @@ export const filtRStore = {
         updatedInterview,
         ...currentStore.interviews.filter((i) => i.candidateId !== candidateId),
       ],
-      reports: [newReport, ...currentStore.reports.filter((r) => r.candidateId !== candidateId)],
+      reports: [
+        newReport,
+        ...currentStore.reports.filter((r) => r.candidateId !== candidateId),
+      ],
     };
     notifyListeners();
   },
@@ -1034,14 +1024,10 @@ export const filtRStore = {
   },
 
   // Generate mock interview for a candidate
-  generateMockInterview(
-    candidateId: string,
-    jobId: string,
-    requirements: JobRequirement[],
-  ): Interview {
+  generateMockInterview(candidateId: string, jobId: string, requirements: JobRequirement[]): Interview {
     const interviewId = `int-${candidateId}`;
     const questionsTotal = requirements.length;
-
+    
     const interview: Interview = {
       id: interviewId,
       candidateId,
@@ -1054,9 +1040,7 @@ export const filtRStore = {
       evidenceItems: [],
     };
 
-    const alreadyGenerated = currentStore.interviews.some(
-      (item) => item.candidateId === candidateId,
-    );
+    const alreadyGenerated = currentStore.interviews.some((item) => item.candidateId === candidateId);
 
     currentStore = {
       ...currentStore,
@@ -1128,4 +1112,26 @@ export function getJobReportsForJob(
       report: r,
     }))
     .filter((item) => item.candidate !== undefined);
+}
+
+/** Hydrate the UI store from the existing FastAPI backend. No backend changes required. */
+export async function hydrateStoreFromBackend(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const { getJobsFromApi, getJobDashboard, mapCandidate } = await import("@/lib/api");
+    const jobs = await getJobsFromApi();
+    const candidates: Candidate[] = [];
+    for (const job of jobs) {
+      const dashboard = await getJobDashboard(job.id);
+      for (const raw of dashboard.candidates || []) candidates.push(mapCandidate(raw, job.id));
+    }
+    currentStore = {
+      ...currentStore,
+      jobs,
+      candidates,
+    };
+    notifyListeners();
+  } catch (error) {
+    console.warn("FiltR backend unavailable; keeping local UI data.", error);
+  }
 }

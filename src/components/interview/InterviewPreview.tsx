@@ -5,7 +5,7 @@ import type { Interview } from "@/types/filtr";
 interface InterviewPreviewProps {
   candidateName: string;
   candidateInitials: string;
-  interview?: Interview | undefined;
+  interview?: Interview;
 }
 
 export function InterviewPreview({
