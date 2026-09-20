@@ -1116,7 +1116,6 @@ export function getJobReportsForJob(
 
 /** Hydrate the UI store from the existing FastAPI backend. No backend changes required. */
 export async function hydrateStoreFromBackend(): Promise<void> {
-  if (typeof window === "undefined") return;
   try {
     const { getJobsFromApi, getJobDashboard, mapCandidate } = await import("@/lib/api");
     const jobs = await getJobsFromApi();

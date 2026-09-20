@@ -1,5 +1,9 @@
-import { Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, ChevronRight } from "lucide-react";
+
+export const Route = createFileRoute("/")({
+  component: HomePage,
+});
 
 const steps = [
   {
@@ -66,14 +70,7 @@ const mvpFeatures = [
 function FiltrLogo({ large = false }: { large?: boolean }) {
   return (
     <div className={`flex items-center ${large ? "gap-3" : "gap-2"}`}>
-      <div
-        className={`flex items-center justify-center rounded-xl bg-[#07101f] text-white shadow-lg shadow-blue-900/10 ${
-          large ? "h-12 w-12 text-2xl" : "h-9 w-9 text-lg"
-        }`}
-      >
-        <span className="font-black italic">F</span>
-      </div>
-
+     <img src="/logo.ico" alt="FiltR Logo" className="h-10 w-auto" />
       <div className="leading-none">
         <div
           className={`font-bold tracking-tight text-[#0a0d14] ${
@@ -84,7 +81,7 @@ function FiltrLogo({ large = false }: { large?: boolean }) {
         </div>
 
         <div
-          className={`mt-1 whitespace-nowrap text-[#5e6675] ${
+          className={`-mt-1 whitespace-nowrap text-[#5e6675] ${
             large ? "text-[9px]" : "text-[7px]"
           }`}
         >
@@ -97,46 +94,50 @@ function FiltrLogo({ large = false }: { large?: boolean }) {
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f4f8ff] text-[#07101f]">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute left-1/2 top-0 h-[700px] w-[900px] -translate-x-1/2 rounded-full bg-blue-100/60 blur-[120px]" />
-        <div className="absolute right-[-250px] top-[500px] h-[600px] w-[600px] rounded-full bg-blue-200/40 blur-[120px]" />
-        <div className="absolute bottom-0 left-[-300px] h-[600px] w-[600px] rounded-full bg-white blur-[100px]" />
-      </div>
+  <main className="relative min-h-screen overflow-x-clip bg-[#eaf1ff] text-[#07101f]">
+  {/* Background */}
+  <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div className="absolute left-1/2 top-0 h-[700px] w-[900px] -translate-x-1/2 rounded-full bg-blue-300/70 blur-[120px]" />
+
+    <div className="absolute right-[-250px] top-[500px] h-[600px] w-[600px] rounded-full bg-blue-500/60 blur-[120px]" />
+
+    <div className="absolute bottom-0 left-[-300px] h-[600px] w-[600px] rounded-full bg-indigo-300/60 blur-[100px]" />
+  </div>
+
+  <div className="relative z-10">
 
       {/* NAVBAR */}
-      <header className="sticky top-0 z-50 border-b border-blue-100/70 bg-white/75 backdrop-blur-xl">
+      <header className="sticky top-0 z-100 border-b border-blue-100/70 bg-white/75 backdrop-blur-xl">
         <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-6 lg:px-10">
           <a href="#home" className="shrink-0">
-            <FiltrLogo />
+            <FiltrLogo /> 
           </a>
 
           <nav className="hidden items-center gap-2 md:flex">
             <a
               href="#home"
-              className="rounded-full border border-[#1857ff] bg-white px-5 py-2 text-sm font-medium text-[#1857ff] shadow-sm"
+              className="rounded-full bg-white px-5 py-2 text-sm font-medium text-[#1857ff] transition hover:border hover:border-[#1857ff] hover:bg-blue-50"
             >
               Home
             </a>
 
             <a
               href="#how-it-works"
-              className="rounded-full px-4 py-2 text-sm text-[#1857ff] transition hover:bg-blue-50"
+              className="rounded-full bg-white px-5 py-2 text-sm font-medium text-[#1857ff] transition hover:border hover:border-[#1857ff] hover:bg-blue-50"
             >
               How It Works
             </a>
 
             <a
               href="#why-filtr"
-              className="rounded-full px-4 py-2 text-sm text-[#1857ff] transition hover:bg-blue-50"
+              className="rounded-full bg-white px-5 py-2 text-sm font-medium text-[#1857ff] transition hover:border hover:border-[#1857ff] hover:bg-blue-50"
             >
               Why FiltR
             </a>
 
             <a
               href="#mvp"
-              className="rounded-full px-4 py-2 text-sm text-[#1857ff] transition hover:bg-blue-50"
+              className="rounded-full bg-white px-5 py-2 text-sm font-medium text-[#1857ff] transition hover:border hover:border-[#1857ff] hover:bg-blue-50"
             >
               Our MVP
             </a>
@@ -147,13 +148,9 @@ export default function HomePage() {
       {/* HERO */}
       <section
         id="home"
-        className="relative flex min-h-[650px] items-center justify-center px-6 py-24"
+        className="relative flex min-h-[650px] z-20 items-center justify-center px-6 py-24 "
       >
-        <div className="mx-auto w-full max-w-5xl text-center">
-          <div className="mb-7 flex justify-center">
-            <FiltrLogo large />
-          </div>
-
+        <div className="mx-auto lg:py-20 w-full max-w-5xl text-center">
           <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-[-0.045em] text-[#0a0d14] sm:text-5xl md:text-6xl lg:text-[72px] lg:leading-[0.98]">
             Stop screening resumes.
             <br />
@@ -184,13 +181,14 @@ export default function HomePage() {
               </Link>
 
               {/* Candidate */}
-              <a
-                href="/interview/demo"
+              <Link
+                to="/interview/$token"
+                params={{ token: "demo" }}
                 className="group flex h-28 w-48 items-center justify-center rounded-2xl border-2 border-[#1857ff] bg-white/40 px-6 text-xl font-bold text-[#1857ff] shadow-lg shadow-blue-500/5 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:bg-white"
               >
                 <span>Candidate</span>
                 <ArrowRight className="ml-3 h-5 w-5 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100" />
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -199,7 +197,7 @@ export default function HomePage() {
       {/* HOW IT WORKS */}
       <section
         id="how-it-works"
-        className="border-y border-blue-100/70 bg-white/35 px-6 py-24"
+        className="z-100 px-6 py-20"
       >
         <div className="mx-auto max-w-6xl">
           <div className="mb-16">
@@ -242,7 +240,7 @@ export default function HomePage() {
       </section>
 
       {/* WHY FILTR */}
-      <section id="why-filtr" className="px-6 py-24">
+      <section id="why-filtr" className="z-20 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-14 text-center">
             <h2 className="text-4xl font-bold tracking-tight md:text-6xl">
@@ -285,7 +283,7 @@ export default function HomePage() {
             </div>
 
             {/* FiltR */}
-            <div className="rounded-[28px] bg-gradient-to-br from-[#1955ff] to-[#7299ff] p-8 text-white shadow-2xl shadow-blue-500/20">
+            <div className="rounded-[28px] bg-gradient-to-br from-[#1955ff] to-[#7299ff] p-8 text-white shadow-2xl transition duration-300 hover:translate-y-[-5px] shadow-blue-500/20">
               <h3 className="text-xl font-bold">FiltR</h3>
 
               <div className="mt-6 space-y-4">
@@ -312,7 +310,7 @@ export default function HomePage() {
       {/* OUR MVP */}
       <section
         id="mvp"
-        className="border-y border-blue-100/70 bg-white/30 px-6 py-24"
+        className="z-20 px-6 py-24"
       >
         <div className="mx-auto max-w-6xl">
           <div className="mb-14 flex items-end justify-between gap-8">
@@ -381,7 +379,7 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-gradient-to-r from-[#1554ff] via-[#347ef5] to-[#54b4ee] px-6 py-14 text-white">
+      <footer className="z-20 bg-gradient-to-r from-[#1554ff] via-[#347ef5] to-[#54b4ee] px-6 py-14 text-white">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
             <div>
@@ -475,6 +473,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      </div>
     </main>
   );
 }

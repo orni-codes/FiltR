@@ -6,7 +6,15 @@ import { ResumeView } from "@/components/candidates/ResumeView";
 import { CandidateInterview } from "@/components/candidates/CandidateInterview";
 import { EvidenceView } from "@/components/evidence/EvidenceView";
 import { CandidateReport } from "@/components/reports/CandidateReport";
-import { getCandidate, getJob, getInterview, getResume, getCandidateReport } from "@/data/mock";
+import { ApiError, getJobDashboard, mapCandidate, mapJobFromDashboard } from "@/lib/api";
+import {
+  getCandidate,
+  getCandidateReport,
+  getInterview,
+  getJob,
+  getResume,
+  hydrateStoreFromBackend,
+} from "@/lib/store";
 
 const candidateSearchSchema = z.object({
   tab: z
@@ -21,9 +29,25 @@ type CandidateSearch = z.infer<typeof candidateSearchSchema>;
 export const Route = createFileRoute("/_recruiter/jobs/$jobId/candidates/$candidateId")({
   validateSearch: (search: Record<string, unknown>): CandidateSearch =>
     candidateSearchSchema.parse(search),
-  loader: ({ params }) => {
-    const job = getJob(params.jobId);
-    const candidate = getCandidate(params.candidateId);
+  loader: async ({ params }) => {
+    await hydrateStoreFromBackend();
+    let job = getJob(params.jobId);
+    let candidate = getCandidate(params.candidateId);
+
+    if (!job || !candidate) {
+      try {
+        const dashboard = await getJobDashboard(params.jobId);
+        job = job || mapJobFromDashboard(dashboard, params.jobId);
+        const raw = (dashboard.candidates || []).find(
+          (item: { candidate_id: number | string }) => String(item.candidate_id) === params.candidateId,
+        );
+        candidate = candidate || (raw ? mapCandidate(raw, params.jobId) : undefined);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) throw notFound();
+        throw error;
+      }
+    }
+
     if (!job || !candidate) throw notFound();
 
     const resume = getResume(candidate.id);

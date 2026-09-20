@@ -1,10 +1,20 @@
 import { createFileRoute, Outlet, notFound, useMatches } from "@tanstack/react-router";
 import { JobHeader, JobNavigation } from "@/components/jobs/JobHeader";
-import { getJob } from "@/data/mock";
+import { ApiError, getJobDashboard, mapJobFromDashboard } from "@/lib/api";
+import { getJob, hydrateStoreFromBackend } from "@/lib/store";
 
 export const Route = createFileRoute("/_recruiter/jobs/$jobId")({
-  loader: ({ params }) => {
-    const job = getJob(params.jobId);
+  loader: async ({ params }) => {
+    await hydrateStoreFromBackend();
+    let job = getJob(params.jobId);
+    if (!job) {
+      try {
+        job = mapJobFromDashboard(await getJobDashboard(params.jobId), params.jobId);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) throw notFound();
+        throw error;
+      }
+    }
     if (!job) throw notFound();
     return { job };
   },

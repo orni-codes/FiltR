@@ -1,16 +1,26 @@
-import { createFileRoute, Outlet, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CandidateLayout } from "@/components/layout/CandidateLayout";
-import { getInterviewByToken } from "@/lib/api";
+import { ApiError, getInterviewByToken } from "@/lib/api";
 
 export const Route = createFileRoute("/interview/$token")({
   loader: async ({ params }) => {
     try {
       const data = await getInterviewByToken(params.token);
       return { token: params.token, ...data };
-    } catch { throw notFound(); }
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) throw notFound();
+      throw error;
+    }
   },
   component: CandidateInterviewLayout,
-  notFoundComponent: () => <div className="flex min-h-screen items-center justify-center p-6 text-center"><div><h1 className="text-xl font-semibold">Interview Link Invalid or Expired</h1><p className="mt-2 text-sm text-muted-foreground">Please check the link provided by your recruiter.</p></div></div>,
+  notFoundComponent: () => (
+    <div className="flex min-h-screen items-center justify-center p-6 text-center">
+      <div>
+        <h1 className="text-xl font-semibold">Interview Link Invalid or Expired</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please check the link provided by your recruiter.</p>
+      </div>
+    </div>
+  ),
 });
 
 function CandidateInterviewLayout() {

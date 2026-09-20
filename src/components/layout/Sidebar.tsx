@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BriefcaseBusiness, FileCheck2, MoreHorizontal, Settings, UsersRound, X, Zap } from "lucide-react";
+import { BriefcaseBusiness, FileCheck2, LogOut, MoreHorizontal, Settings, UsersRound, X, Zap } from "lucide-react";
 import { Brand } from "@/components/brand/Brand";
 import { Button } from "@/components/ui/button";
 
@@ -38,13 +38,40 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       <div className="mt-auto space-y-2 pt-6">
-        <Button variant="ghost" className="h-10 w-full justify-start rounded-xl px-3 text-muted-foreground"><Settings className="mr-2 size-4" />Settings</Button>
-        <div className="flex items-center gap-2.5 border-t border-border px-2 pt-4">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-foreground text-[10px] font-semibold text-background">AM</div>
-          <div className="min-w-0"><div className="truncate text-xs font-medium">Ava Morgan</div><div className="truncate text-[10px] text-muted-foreground">Recruiting lead</div></div>
-          <MoreHorizontal className="ml-auto size-4 text-muted-foreground" />
-        </div>
+  <Link to="/">
+    <Button
+      variant="ghost"
+      className="h-10 w-full justify-start rounded-xl px-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+      onClick={onClose}
+    >
+      <LogOut className="mr-2 size-4" />
+      Sign Out
+    </Button>
+  </Link>
+
+  <Button
+    variant="ghost"
+    className="h-10 w-full justify-start rounded-xl px-3 text-muted-foreground"
+  >
+    <Settings className="mr-2 size-4" />
+    Settings
+  </Button>
+
+  <div className="flex items-center gap-2.5 border-t border-border px-2 pt-4">
+    <div className="flex size-9 items-center justify-center rounded-xl bg-foreground text-[10px] font-semibold text-background">
+      AM
+    </div>
+
+    <div className="min-w-0">
+      <div className="truncate text-xs font-medium">Ava Morgan</div>
+      <div className="truncate text-[10px] text-muted-foreground">
+        Recruiting lead
       </div>
+    </div>
+
+    <MoreHorizontal className="ml-auto size-4 text-muted-foreground" />
+  </div>
+</div>
     </aside>
   );
 }

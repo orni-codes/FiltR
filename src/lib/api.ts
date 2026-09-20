@@ -1,22 +1,57 @@
 import type { Candidate, CandidateReport, Interview, Job, JobRequirement } from "@/types/filtr";
 
-const API_BASE = (import.meta.env['VITE_API_BASE_URL'] as string | undefined)?.replace(/\/$/, "") || "/api";
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+function resolveApiBase(): string {
+  const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "");
+  if (configured?.startsWith("http")) return configured;
+  if (typeof window === "undefined") {
+    const serverUrl = (import.meta.env.VITE_API_SERVER_URL as string | undefined)?.replace(/\/$/, "");
+    return serverUrl || "http://127.0.0.1:8000";
+  }
+  return configured || "/api";
+}
+
+const API_BASE = resolveApiBase();
+
+function detailMessage(detail: unknown, fallback: string): string {
+  if (typeof detail === "string" && detail.trim()) return detail;
+  if (Array.isArray(detail) && detail.length) {
+    return detail
+      .map((item) => (typeof item === "string" ? item : item?.msg || JSON.stringify(item)))
+      .join("; ");
+  }
+  return fallback;
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: {
-      ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-      ...(init?.headers || {}),
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers: {
+        ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+        ...(init?.headers || {}),
+      },
+    });
+  } catch {
+    throw new ApiError(0, "FiltR API is unavailable. Start the FastAPI backend and try again.");
+  }
   if (!response.ok) {
     let message = `API request failed (${response.status})`;
     try {
       const body = await response.json();
-      message = body.detail || message;
+      message = detailMessage(body.detail, message);
     } catch {}
-    throw new Error(message);
+    throw new ApiError(response.status, message);
   }
   return response.json() as Promise<T>;
 }
@@ -59,6 +94,29 @@ export async function getJobsFromApi(): Promise<Job[]> {
 
 export async function getJobDashboard(jobId: string): Promise<any> {
   return request(`/jobs/${jobId}/dashboard`);
+}
+
+export function mapJobFromDashboard(dashboard: any, fallbackId?: string): Job {
+  const job = dashboard?.job || {};
+  const requirements = parseRequirements(job.requirements);
+  const candidates = dashboard?.candidates || [];
+  const completed = candidates.filter((c: any) => c.pipeline_status === "interview_completed").length;
+  return {
+    id: String(job.id ?? fallbackId),
+    title: job.title,
+    location: "—",
+    workMode: "—",
+    experience: "—",
+    employmentType: "—",
+    description: job.description || "",
+    requiredSkills: requirements.filter((r) => r.type === "Required").map((r) => r.name),
+    preferredSkills: requirements.filter((r) => r.type === "Preferred").map((r) => r.name),
+    requirements,
+    candidateCount: candidates.length,
+    interviewCount: completed,
+    activity: "Synced from API",
+    status: "Active",
+  } satisfies Job;
 }
 
 export async function createJob(title: string, description: string) {
